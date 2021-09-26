@@ -1,23 +1,32 @@
-import { addChat, removeChat, updateChat, } from '../store/chatsSlice';
-import chatItem from "../media/chatItem.svg";
-function getCurrentUser() {}
+import httpService from "./httpService";
+import { chatDispatch } from "../store/chatsSlice";
+import Chat from "../types/chat";
 
-const authObject = { getCurrentUser };
+const { commentEndpoint } = httpService.endpoints;
 
-export const getChat = () => {
-
+const getChats = async () => {
+  try {
+    const result = await httpService.get(commentEndpoint);
+    const data = result.data.data ?? [];
+    chatDispatch.set(data);
+  } catch (e) {
+    console.log(e.message);
+  }
 };
 
-export const createChat = (dispatch, message) => {
-    const newitem = {
-        id: Date.now() + "",
-        userId: Date.now() + "",
-        name: "Mr._Primal",
-        time: 23,
-        message: message,
-        avatar: chatItem,
-    };
-    dispatch(addChat(newitem));
+const addChat = async (chat: Chat) => {
+  const newChat: any = { ...chat };
+  delete newChat._id;
+
+  try {
+    await httpService.post(commentEndpoint, newChat);
+  } catch (error) {
+    console.log(error);
+  }
+
+  return;
 };
 
-export default authObject;
+const chatService = { addChat, getChats };
+
+export default chatService;

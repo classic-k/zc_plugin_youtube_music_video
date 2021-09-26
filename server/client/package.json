@@ -1,5 +1,5 @@
 {
-  "name": "@zuri/music-plugin",
+  "name": "@zuri/zuri-plugin-music",
   "scripts": {
     "start": "webpack serve",
     "start:standalone": "webpack serve --env standalone",
@@ -52,6 +52,8 @@
     "webpack-merge": "^5.8.0"
   },
   "dependencies": {
+    "@mui/icons-material": "^5.0.1",
+    "@mui/material": "^5.0.1",
     "@reduxjs/toolkit": "^1.6.1",
     "@types/jest": "^27.0.1",
     "@types/react": "^17.0.19",
@@ -59,16 +61,22 @@
     "@types/systemjs": "^6.1.1",
     "@types/webpack-env": "^1.16.2",
     "axios": "^0.21.4",
+    "centrifuge": "^2.8.2",
     "emoji-picker-react": "^3.4.8",
+    "moment-timezone": "^0.5.33",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-giphy-picker": "^1.1.1",
     "react-icons": "^4.2.0",
+    "react-loader-spinner": "^4.0.0",
+    "react-moment": "^1.1.1",
     "react-player": "^2.9.0",
     "react-redux": "^7.2.5",
     "react-router-dom": "^5.3.0",
     "react-toastify": "^8.0.2",
     "single-spa": "^5.9.3",
     "single-spa-react": "^4.3.1",
+    "sockjs-client": "^1.5.2",
     "styled-components": "^5.3.1"
   },
   "types": "dist/zuri-music-plugin.d.ts"

@@ -1,22 +1,20 @@
 import styled from "styled-components";
+import Moment from "react-moment";
 
-interface Props {
-  name: string;
-  avatar: string;
-  time: number;
-  message: string;
-}
+import Chat from "../../types/chat";
 
-function ChatItem({ name, avatar, time, message }: Props) {
+function ChatItem({ name, avatar, time, message }: Chat) {
   return (
     <Wrapper>
       <div className="item-avatar">
-        <img src={avatar} alt="user avatar" />
+        <img src={avatar} alt="" />
       </div>
       <div className="item-content">
         <div className="item-name-time">
           <span className="item-name">{name}</span>
-          <span className="item-time">{time} AM</span>
+          <span className="item-time">
+            <Moment fromNow>{new Date(time).toJSON()}</Moment>
+          </span>
         </div>
         <div className="item-text">{message}</div>
       </div>
@@ -31,6 +29,7 @@ const Wrapper = styled.div`
   color: hsla(300, 2%, 11%, 1);
 
   .item-avatar {
+    position: relative;
     flex-basis: 50px;
     height: 50px;
     border-radius: 6px;

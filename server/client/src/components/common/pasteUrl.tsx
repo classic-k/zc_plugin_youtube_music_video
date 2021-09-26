@@ -6,50 +6,42 @@ import { toast } from "react-toastify";
 
 import Song from "../../types/song";
 
-import { selectPasteUrl, uiAction } from "../../store/uiSlice";
-
-import { getSongMetadat } from "../../utils/metadata";
+import { RootState } from "../../store";
+import { uiDispatch, uiSelect } from "../../store/uiSlice";
 
 import songService from "../../services/songService";
-import authService from "../../services/authService";
-import { RootState } from "../../store";
+import { getSongIdFromYouTubeUrl } from "../../utils/idGenerator";
 
 interface Props {
-  getSongById: (id: string) => Song;
+  getSongByUrl: (url: string) => Song;
 }
 
 const PasteUrl = (props: Props) => {
-  const { getSongById } = props;
-
   const [url, setUrl] = useState("");
 
-  const pasteUrl = useSelector(selectPasteUrl);
+  const showPasteUrl = useSelector(uiSelect.showPasteUrl);
 
-  if (!pasteUrl) return null;
+  if (!showPasteUrl) return null;
 
   const handleChange = (event: any) => setUrl(event.target.value);
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    console.log("Adding song......");
+    if (props.getSongByUrl(url)) return toast.error("The song already exist.");
+
+    uiDispatch.loading(true);
 
     try {
-      const metadata = await getSongMetadat(url);
-
-      const isExist = getSongById(metadata.id);
-
-      if (isExist) throw Error("Song already in the library");
-
-      const song: Song = {
-        ...metadata,
-        addedBy: authService.getCurrentUser().name,
-      };
-
-      songService.addSong(song);
+      getSongIdFromYouTubeUrl(url);
+      await songService.addSongbyUrl(url);
+      uiDispatch.showPasteUrl(false);
+      toast.success("Added Successfully");
     } catch (e) {
       toast.error(e.message);
     }
+
+    uiDispatch.loading(false);
   };
 
   return (
@@ -66,7 +58,7 @@ const PasteUrl = (props: Props) => {
                 height: "1rem",
                 cursor: "pointer",
               }}
-              onClick={() => uiAction.dispatchAddSongToggle(false)}
+              onClick={() => uiDispatch.showPasteUrl(false)}
             />
           </label>
         </div>
@@ -78,6 +70,7 @@ const PasteUrl = (props: Props) => {
             id=""
             value={url}
             onChange={handleChange}
+            autoFocus
           />
 
           <input className="input-submit" type="submit" value="Add" />
@@ -88,23 +81,20 @@ const PasteUrl = (props: Props) => {
 };
 
 const Wrapper = styled.div`
-  position: fixed;
-  top: 180px;
-  left: 20%;
-  width: 400px;
-  height: 80px;
+  position: absolute;
+  height: 110px;
   display: flex;
   justify-content: center;
+  width: min(90%, 400px);
 
   .submit-form {
     display: flex;
     flex-direction: column;
-    justify-content: space-evenly;
+    justify-content: space-between;
     background: #fff;
-    width: 100%;
-    height: 100%;
     border: 2px solid #00bb7c;
     padding: 1rem;
+    width: 100%;
   }
   .form-label {
     display: flex;
@@ -113,15 +103,13 @@ const Wrapper = styled.div`
   }
   .inputs {
     display: flex;
-    justify-content: space-between;
-    height: 20px;
+    height: 40px;
   }
   .input-text {
     flex-grow: 1;
     border: 1.5px solid #00bb7c;
     outline: none;
     padding: 0.5rem;
-    height: 100%;
     font-size: 17px;
   }
   .input-text::selection {
@@ -129,9 +117,8 @@ const Wrapper = styled.div`
     color: white;
   }
   .input-submit {
-    flex-basis: 25%;
-    height: 195%;
-    padding: 0.5rem 1.2rem;
+    flex-basis: 70px;
+    padding: 5px 10px;
     font-size: 17px;
     color: #fff;
     background: #00bb7c;
@@ -139,19 +126,10 @@ const Wrapper = styled.div`
     outline: none;
     cursor: pointer;
   }
-
-  @media (max-width: 453px) {
-    width: 100%;
-    left: 1px;
-
-    .submit-form {
-      width: 80%;
-    }
-  }
 `;
 
 const mapStateToProps = (state: RootState) => ({
-  getSongById: (songId) => state.songs.find((song) => song.id === songId),
+  getSongByUrl: (url) => state.songs.find((song) => song.url === url),
 });
 
 export default connect(mapStateToProps)(PasteUrl);

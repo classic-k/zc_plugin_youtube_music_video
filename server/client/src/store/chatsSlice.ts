@@ -1,24 +1,35 @@
-import { createSlice } from "@reduxjs/toolkit";
-import getChats from "../mock-data/chats";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import store, { RootState } from ".";
+import Chat from "../types/chat";
+import { sanitize } from "../utils/sanitizer";
 
-const initialState = getChats();
+// import avatar from "../media/chatItem.svg";
 
 const chatsSlice = createSlice({
   name: "chats",
-  initialState,
+
+  initialState: [] as Chat[],
+
   reducers: {
-    addChat: (state, { payload }) => {
-      state.push(payload);
+    setChats: (state, { payload }: PayloadAction<Chat[]>) => {
+      return payload.map(sanitize);
     },
-    removeChat: (state, { payload }) => {
+
+    addChat: (state, { payload }: PayloadAction<Chat>) => {
+      state.push(sanitize(payload));
+    },
+
+    removeChat: (state, { payload }: PayloadAction<Chat>) => {
       const { id } = payload;
       const existingChat = state.find((chat) => chat.id === id);
       if (existingChat) state.filter((chat) => chat.id !== id);
     },
-    updateChat: (state, { payload }) => {
-      const { id, message, time = Date.now() + "" } = payload;
+
+    updateChat: (state, { payload }: PayloadAction<Chat>) => {
+      const { id, message, time = Date.now() } = payload;
+
       const existingChat = state.find((chat) => chat.id === id);
+
       if (existingChat) {
         existingChat.message = message;
         existingChat.time = time;
@@ -27,11 +38,20 @@ const chatsSlice = createSlice({
   },
 });
 
-export const { addChat, removeChat, updateChat } = chatsSlice.actions;
+export const { addChat, setChats } = chatsSlice.actions;
 
-export const selectAllChats = (state: RootState) => state.chats;
-export const selectChatById = (state: RootState, chatId: string) => {
-  return state.chats.find((chat) => chat.id === chatId);
+export const chatDispatch = {
+  set: (payload: Chat[]) => store.dispatch({ type: setChats.type, payload }),
+
+  addChat: (payload: Chat) => store.dispatch({ type: addChat.type, payload }),
+};
+
+export const chatSelect = {
+  allChat: (state: RootState) => state.chats,
+
+  chatById: (state: RootState, id: string) => {
+    return state.chats.find((chat) => chat.id === id);
+  },
 };
 
 export default chatsSlice.reducer;
